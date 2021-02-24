@@ -1,0 +1,14 @@
+int ComputeMaxSteal(int* cards, int cash, int subsets){
+	int maxSteal = 0;
+	int items;
+	int optimal;
+	int totCost = 0
+	numCards = sizeof(cards)/sizeof(cards[0]);
+	for(int i = 0; i < numCards; i++){
+		totCost = totCost + cards[i];
+	}
+	if(totCost <= cash){
+		return totCost;
+	}
+	for(int i = 0; i < subsets; i++){
+		
