@@ -1,2 +1,3 @@
-5
+2
 beans 20
+joemama 50
