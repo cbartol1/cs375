@@ -1,5 +1,6 @@
 #include<stdio.h>
 #include<string.h>
+#include<stdlib.h>
 
 typedef struct{
 char* name;
@@ -61,5 +62,30 @@ int ComputeMaxSteal(cardList* cards, int cash, int subsets, int bits){
 }
 
 int main(int argc, char* argv[]){
+	FILE *fpm;
+	FILE *fpl;
+	char buffer[255];
+	int numCards;
+	//char* test1;
+	//int test2;
+	inputCards* markList;
+	for(int i = 1; i < argc; i++){
+		if(strcmp(argv[i], "-m") == 0) fpm = fopen(argv[i+1], "r");
+		if(strcmp(argv[i], "-p") == 0) fpl = fopen(argv[i+1], "r");
+	}
+	fgets(buffer, 255, (FILE*)fpm);
+	printf("%s\n", buffer);
+	int sntl = 0;
+	//while(!feof(fpm)){
+		fscanf(fpm, "%s", buffer);
+		printf("%s\n", buffer);
+		fgets(buffer, 255,(FILE*)fpm);
+		printf("%s\n", buffer);
+		//sntl++;
+	//}
+	//printf("%d\n", numCards);
+	printf("%d\n", atoi(buffer));
+	fclose(fpm);
+	fclose(fpl);
 	return 0;
 }
