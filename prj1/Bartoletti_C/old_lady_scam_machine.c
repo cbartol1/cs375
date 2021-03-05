@@ -9,12 +9,13 @@ int val;
 }inputCards;
 
 typedef struct{
-//char* name;
+char* name;
 int listVal;
 int markVal;
 }cardList;
 
 int optimalCards = 0;
+inputCards* optimalNames;
 
 int ComputeMaxSteal(cardList* cards, int cash, int subsets, int bits){
         int maxSteal = 0;
@@ -40,6 +41,12 @@ int ComputeMaxSteal(cardList* cards, int cash, int subsets, int bits){
 		//printf("%d\n", maxSteal);
 		int r = maxSteal - totCost;
 		optimalCards = numCards;
+		optimalNames = (inputCards*)malloc(sizeof(inputCards)*optimalCards);
+                for(int r = 0; r < optimalCards; r++){
+                        //printf("hit\n");
+                        optimalNames[r].name = cards[r].name;
+                        optimalNames[r].val = cards[r].listVal;
+                }
                 return r;
         }
 	totCost = 0;
@@ -48,6 +55,7 @@ int ComputeMaxSteal(cardList* cards, int cash, int subsets, int bits){
 		//printf("%d", i);
 		for(int r = 0; r < sizeof(items)/sizeof(items[0]); r++){
                         //optimal[r] = items[r];
+			items[r].name = "";
                         items[r].listVal = 0;
                 	items[r].markVal = 0;
                 }
@@ -57,6 +65,7 @@ int ComputeMaxSteal(cardList* cards, int cash, int subsets, int bits){
 				//printf("hit\n");
 				//items[sntl].name = cards[j].name;
 				bitval++;
+				items[sntl].name = cards[j].name;
 				items[sntl].listVal = cards[j].listVal;
 				//printf("%d\n", items[sntl].listVal);
 				items[sntl].markVal = cards[j].markVal;
@@ -83,25 +92,39 @@ int ComputeMaxSteal(cardList* cards, int cash, int subsets, int bits){
 			if(steal > maxSteal){
 				maxSteal = steal;
 				optimalCards = bitval;
-				//for(int r = 0; r < sizeof(items)/sizeof(items[0]); r++){
-                        		//optimal[r] = items[r];
-					//items[r].listVal = 0;
-					//items[r].markVal = 0;
-                		//}
+				//free(optimalNames);
+				optimalNames = calloc(bitval, sizeof(inputCards));
+				for(int r = 0; r < bitval; r++){
+                        		optimalNames[r].name = items[r].name;
+					optimalNames[r].val = items[r].listVal;
+					items[r].listVal = 0;
+					items[r].markVal = 0;
+                		}
 			}
 		}
 		newCost = 0;
 		steal = 0;
 	}
+	//printf("hit\n");
+	//optimalNames = (inputCards*)malloc(sizeof(inputCards)*optimalCards);
+		//for(int r = 0; r < optimalCards; r++){
+			//printf("hit\n");
+                	//optimalNames[r].name = items[r].name;
+                        //optimalNames[r].val = items[r].listVal;
+                //}
 	return maxSteal;
 }
 
 int main(int argc, char* argv[]){
+	//clock_t t;
+	//t = clock();
 	FILE *fpm;
 	FILE *fpl;
+	FILE *fp;
 	//char* buff1[255];
 	//char* buff2[255];
 	int numCards;
+	int profit;
 	int cash;
 	int lines = 0;
 	int mLines = 0;
@@ -189,7 +212,7 @@ int main(int argc, char* argv[]){
 			for(int j = 0; j < sizeof(markList)/sizeof(markList[0]); j++){
 				//printf("%s\n", markList[j].name);
 				if(strcmp(priceList[i].name, markList[j].name) == 0){
-					//list[flag].name = priceList[i].name;
+					list[flag].name = priceList[i].name;
 					//printf("%s\n", list[flag].name);
 					list[flag].listVal = priceList[i].val;
 					//printf("%d\n", list[flag].listVal);
@@ -200,8 +223,24 @@ int main(int argc, char* argv[]){
 				}
 			}
 		}
-		printf("%d\n", ComputeMaxSteal(list, cash, (numCards*numCards)-1, numCards));
-		printf("this required %d cards\n", optimalCards);
+		fp = fopen("output.txt", "a");
+		clock_t t;
+        	t = clock();
+		profit = ComputeMaxSteal(list, cash, (numCards*numCards)-1, numCards);
+		//printf("%d\n", ComputeMaxSteal(list, cash, (numCards*numCards)-1, numCards));
+		t = clock()-t;
+        	double time_taken = ((double)t)/CLOCKS_PER_SEC;
+		fprintf(fp, "%d input cards\n", numCards);
+		fprintf(fp, "%d dollars profit\n", profit);
+		fprintf(fp, "%d cards to achieve max profit\n", optimalCards);
+		fprintf(fp, "%f time to execute (in seconds)\n", time_taken);
+		for(int i = 0; i < optimalCards; i++){
+			fprintf(fp, "Name = %s, cost = %d\n", optimalNames[i].name, optimalNames[i].val);
+		}
+		free(optimalNames);
+		fclose(fp);
+        	//printf("this took %f seconds to execute\n", time_taken);
+		//printf("this required %d cards\n", optimalCards);
 	}while(n < lines);
 	//cardList list[3];
 	//list[0].name = "JimRice1975";
@@ -216,6 +255,9 @@ int main(int argc, char* argv[]){
 	//printf("%d\n", ComputeMaxSteal(list, 200, 8, 3));
 	//printf("%d\n", numCards);
 	//printf("%d\n", atoi(buffer));
+	//t = clock()-t;
+	//double time_taken = ((double)t)/CLOCKS_PER_SEC;
+	//printf("this took %f seconds to execute", time_taken);
 	fclose(fpm);
 	fclose(fpl);
 	return 0;
