@@ -1,0 +1,82 @@
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+
+#define LCHILD(x) 2 * x + 1
+#define RCHILD(x) 2 * x + 2
+#define PARENT(x) (x - 1) / 2
+
+
+typedef struct{
+	int id;
+	int points;
+} contestant;
+
+typedef struct{
+	int size;
+	contestant *c;
+} heap;
+
+heap makeHeap(int size){
+	heap min;
+	min.size = 0;
+	return min;
+}
+void
+findContestant(int id, heap* list){
+	
+}
+
+void
+insertContestant(int id, int score, heap* list){
+	if(list->size){
+		list->c = realloc(list->c, (size+1)*sizeof(contestant));
+	}
+	else{
+		list->c = malloc(sizeof(contestant));
+	}
+	contestant c;
+	c.id = id;
+	c.score = points;
+	int i = (list->size)++;
+	while(i && c.points < list->c[PARENT(i)].points){
+		list->c[i] = list->c[PARENT(i)];
+		i = PARENT(i);
+	}
+	list->c[i] = c;
+}
+
+void
+eliminateWeakest(heap* list){
+
+}
+
+void
+earnPoints(int id, int points, heap* list){
+
+}
+
+void
+lostPoints(int id, int points, heap* list){
+
+}
+
+void
+showContestants(heap* list){
+
+}
+
+void
+showHandles(heap* list){
+
+}
+
+void
+showLocation(int id, heap* list){
+
+}
+
+void
+crownWinner(heap* list){
+
+}
