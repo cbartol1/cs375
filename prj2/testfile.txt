@@ -1,0 +1,4 @@
+5
+insertContestant <3> <80>
+earnPoints <3> <40>
+showContestants

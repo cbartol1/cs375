@@ -68,14 +68,32 @@ void buildHeap(heap *list, int *arr, int size){
 	}
 }
 
+int flag = -1;
+
+void searchHeap(heap *list, int i, int id){
+        if(LCHILD(i) < list->size){
+                searchHeap(list, LCHILD(i), id);
+        }
+        //printf("%d\n", list->c[i].id);
+        if(list->c[i].id == id){
+                flag = i;
+        }
+        //printf("%d\n", flag);
+        if(RCHILD(i) < list->size){
+                searchHeap(list, RCHILD(i), id);
+        }
+}
+
 void
-findContestant(int id, int* arr){
-	if(arr[id]){
-		printf("Contestant %d is in the extended heap with score %d\n", id, arr[id]);
+findContestant(int id, heap *list){
+	searchHeap(list, 0, id);
+	if(flag != -1){
+		printf("Contestant %d is in the extended heap with score %d\n", id+1, list->c[id].points);
 	}
 	else{
-		printf("Contestant %d is not in the extended heap\n", id);
+		printf("Contestant %d is not in the extended heap\n", id+1);
 	}
+	flag = -1;
 }
 
 void
@@ -123,7 +141,7 @@ insertContestant(int id, int score, heap* list, int *arr){
 void
 eliminateWeakest(heap* list, int *arr){
 	if(list->size){
-		printf("Contestant %d with current lowest score %d eliminated\n", list->c[0].id, list->c[0].points);
+		printf("Contestant %d with current lowest score %d eliminated\n", list->c[0].id+1, list->c[0].points);
 		arr[list->c[0].id] = 0;
 		list->c[0] = list->c[--(list->size)];
 		//arr[list->c[0].id] = 0;
@@ -136,21 +154,21 @@ eliminateWeakest(heap* list, int *arr){
 	}
 }
 
-int flag = -1;
+//int flag = -1;
 
-void searchHeap(heap *list, int i, int id){
-	if(LCHILD(i) < list->size){
-		searchHeap(list, LCHILD(i), id);
-	}
+//void searchHeap(heap *list, int i, int id){
+	//if(LCHILD(i) < list->size){
+		//searchHeap(list, LCHILD(i), id);
+	//}
 	//printf("%d\n", list->c[i].id);
-	if(list->c[i].id == id){
-		flag = i;
-	}
+	//if(list->c[i].id == id){
+		//flag = i;
+	//}
 	//printf("%d\n", flag);
-	if(RCHILD(i) < list->size){
-                searchHeap(list, RCHILD(i), id);
-        }
-}
+	//if(RCHILD(i) < list->size){
+                //searchHeap(list, RCHILD(i), id);
+        //}
+//}
 
 void
 earnPoints(int id, int points, heap* list, int *arr){
@@ -187,7 +205,7 @@ showContestants(heap *list, int i){
 	if(LCHILD(i) < list->size){
 		showContestants(list, LCHILD(i));
 	}
-	printf("Contestant %d in extended heap location %d with score %d\n", list->c[i].id, i, list->c[i].points);
+	printf("Contestant %d in extended heap location %d with score %d\n", list->c[i].id+1, i+1, list->c[i].points);
 	if(RCHILD(i) < list->size){
 		showContestants(list, RCHILD(i));
 	}
@@ -227,36 +245,126 @@ crownWinner(heap* list, int* arr){
 	for(int i = 0; i < total-1; i++){
 		eliminateWeakest(list, arr);
 	}
-	printf("Contestant %d wins with score %d!\n", list->c[0].id, list->c[0].points);
+	printf("Contestant %d wins with score %d!\n", list->c[0].id+1, list->c[0].points);
 }
 
 int main(int argc, char* argv[]){
-	heap *list = makeHeap(5);
-	int arr[5];
+	FILE *fp;
+	char buff[1000];
+	//char ins1[1000];
+	char sub1[1000];
+	//int sntl = 0;
+	//char ptr[1000];
+	int size;
+	int len;
+	int arg1;
+	int arg2;
+	fp = fopen(argv[1], "r");
+	fscanf(fp, "%d", &size);
+	//size = atoi(buff);
+	//printf("%d\n", size);
+	//int size = atoi(buff);
+	heap *list = makeHeap(size);
+	int arr[size];
+	//insertContestant(0, 10, list, arr);
+	//insertContestant(1, 20, list, arr);
+	//printf("%d\n",atoi("<5>"));
+	while(fscanf(fp, "%s", buff)>0){
+		if(strcmp(buff, "insertContestant") == 0){
+			fscanf(fp, "%s", buff);
+			len = strlen(buff);
+			strncpy(sub1, &buff[1], len-1);
+			arg1 = atoi(sub1);
+			arg1 = arg1 - 1;
+			fscanf(fp, "%s", buff);
+                        len = strlen(buff);
+                        strncpy(sub1, &buff[1], len-1);
+                        arg2 = atoi(sub1);
+			insertContestant(arg1, arg2, list, arr);
+		}
+		else if(strcmp(buff, "showContestants") == 0){
+			showContestants(list, 0);
+                }
+		else if(strcmp(buff, "findContestant") == 0){
+			fscanf(fp, "%s", buff);
+                        len = strlen(buff);
+                        strncpy(sub1, &buff[1], len-1);
+                        arg1 = atoi(sub1);
+                        arg1 = arg1 - 1;
+			findContestant(arg1, list);
+                }
+		else if(strcmp(buff, "eliminateWeakest") == 0){
+			eliminateWeakest(list, arr);
+                }
+		else if(strcmp(buff, "losePoints") == 0){
+			fscanf(fp, "%s", buff);
+                        len = strlen(buff);
+                        strncpy(sub1, &buff[1], len-1);
+                        arg1 = atoi(sub1);
+                        arg1 = arg1 - 1;
+                        fscanf(fp, "%s", buff);
+                        len = strlen(buff);
+                        strncpy(sub1, &buff[1], len-1);
+                        arg2 = atoi(sub1);
+			lostPoints(arg1, arg2, list, arr);
+                }
+		else if(strcmp(buff, "earnPoints") == 0){
+			fscanf(fp, "%s", buff);
+                        len = strlen(buff);
+                        strncpy(sub1, &buff[1], len-1);
+                        arg1 = atoi(sub1);
+                        arg1 = arg1 - 1;
+                        fscanf(fp, "%s", buff);
+                        len = strlen(buff);
+                        strncpy(sub1, &buff[1], len-1);
+                        arg2 = atoi(sub1);
+                        earnPoints(arg1, arg2, list, arr);
+                }
+		else if(strcmp(buff, "showHandles") == 0){
+			handle handles[size];
+        		for(int i = 0; i < size; i++){
+                		handles[i].flag = 0;
+        		}
+        		showHandles(list, 0, handles);
+        		for(int i = 0; i < size; i ++){
+                		if(handles[i].flag) printf("Contestant %d stored in extended heap location %d\n", i+1, handles[i].spot+1);
+                		else printf("There is no contestant, die!\n");
+        		}
+                }
+		else if(strcmp(buff, "showLocation") == 0){
+			//showLocation(1, list);
+                }
+		else if(strcmp(buff, "crownWinner") == 0){
+			crownWinner(list, arr);
+                }
+		else{
+			printf("Command not recognized\n");
+		}
+	}
 	//arr[0] = 10;
 	//arr[1] = 20;
 	//arr[2] = 5;
 	//arr[3] = 30;
 	//arr[4] = 25;
-	insertContestant(0, 10, list, arr);
-	insertContestant(1, 20, list, arr);
-	insertContestant(2, 5, list, arr);
-	insertContestant(3, 30, list, arr);
-	insertContestant(4, 25, list, arr);
+	//insertContestant(0, 10, list, arr);
+	//insertContestant(1, 20, list, arr);
+	//insertContestant(2, 5, list, arr);
+	//insertContestant(3, 30, list, arr);
+	//insertContestant(4, 25, list, arr);
 	//findContestant(2, arr);
 	//eliminateWeakest(list, arr);
 	//lostPoints(1, 10, list, arr);
 	//showContestants(list, 0);
 	//handle handles[5];
-	//for(int i = 0; i < 5; i++){
+	//for(int i = 0; i < size; i++){
 		//handles[i].flag = 0;
 	//}
 	//showHandles(list, 0, handles);
-	//for(int i = 0; i < 5; i ++){
+	//for(int i = 0; i < size; i ++){
 		//if(handles[i].flag) printf("Contestant %d stored in extended heap location %d\n", i, handles[i].spot);
 		//else printf("There is no contestant, die!\n");
 	//}
 	//showLocation(1, list);
-	crownWinner(list, arr);
+	//crownWinner(list, arr);
 	//printf("beans\n");
 }
