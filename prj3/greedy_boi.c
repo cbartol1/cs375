@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<string.h>
 #include<stdlib.h>
+#include<time.h>
 
 typedef struct{
 	int profit;
@@ -38,7 +39,7 @@ void greedy1(int c, item* arr, item* newarr, int size){
 		newarr[i].profit = arr[i].profit;
 		newarr[i].weight = arr[i].weight;
 		newarr[i].ratio = arr[i].ratio;
-		arr[i].knap = 1;
+		//arr[i].knap = 1;
 		if(sum == c){
 			break;
 		}
@@ -47,6 +48,7 @@ void greedy1(int c, item* arr, item* newarr, int size){
 			newarr[i].profit = 0;
 			break;
 		}
+		arr[i].knap = 1;
 	}
 }
 
@@ -108,9 +110,10 @@ int kwf2(int i,int weight, int profit, item* arr, int c, int size){
 			bound += arr[i].profit;
 		}
 		else{
-			arr[i].beans = (c-weight)/arr[i].weight;
+			arr[i].beans = (float)(c-weight)/arr[i].weight;
+			//printf("%f\n", arr[i].beans);
 			weight = c;
-			bound += (arr[i].profit * arr[i].knap);
+			bound += (arr[i].profit * arr[i].beans);
 		}
 		i++;
 	}
@@ -118,8 +121,9 @@ int kwf2(int i,int weight, int profit, item* arr, int c, int size){
 }
 
 int promising(int i, item* arr, int c, int size, int weight, int profit, int maxprofit){
+	//printf("%d, %d\n", weight, c);
 	if(weight >= c) return 0;
-	int bound = kwf2(i, weight, profit, arr, c, size);
+	int bound = kwf2(i+1, weight, profit, arr, c, size);
 	//printf("%d\n", bound);
 	if(bound > maxprofit) return 1;
 	return 0;
@@ -136,13 +140,13 @@ void knapsack(int i, int profit, int weight, int c, int maxprofit, item* arr, in
 	}
 	if(promising(i, arr, c, size, weight, profit, maxprofit)){
 		include[i+1] = 1;
-		knapsack(i+1, profit + arr[i+1].profit, weight + arr[i+1].weight, c, maxprofit, arr, optimal, size, include);
+		knapsack(i+1, profit + arr[i].profit, weight + arr[i].weight, c, maxprofit, arr, optimal, size, include);
 		include[i+1] = 0;
 		knapsack(i+1, profit, weight, c, maxprofit, arr, optimal, size, include);
 	}
 }
 
-void backtrack(int c, item* arr, item* newarr, int size){
+void backtrack(int c, item* arr, item* newarr, int size, FILE *fpo){
 	greedy2(c, arr, newarr, size);
 	int maxprofit = 0;
 	int flag = 0;
@@ -171,32 +175,154 @@ void backtrack(int c, item* arr, item* newarr, int size){
         }
 	//int numbest = 0;
 	knapsack(0, 0, 0, c, maxprofit, arr, optimal, size, include);
-	for(int i = 0; i < size+1; i ++){
-		printf("%d, %d\n", optimal[i], include[i]);
-	}
+	//for(int i = 0; i < size+1; i ++){
+		//fprintf(fpo, "%d, %d\n", optimal[i], include[i]);
+	//}
+	maxprofit = 0;
 	for(int i = 0; i < size; i++){
-		if(optimal[i+1]) printf("%d, %d, %d\n", arr[i].profit, arr[i].weight, arr[i].ratio);
+		if(optimal[i+1]){
+			maxprofit += arr[i].profit;
+			arr[i].knap = 1;
+		}
+		else arr[i].knap = 0;
 	}
+	fprintf(fpo, "%d %d ", size, maxprofit);
 }
 
 int main(int argc, char* argv[]){
+	FILE *fp;
+	FILE *fpo;
+	char buff[1000];
+	int nlines = 0;
+	int n = 0;
+	int numItems = 0;
+	int cap;
+	int maxProfit = 0;
+	int alg = atoi(argv[3]);
+	clock_t start, end;
+	double cpu_time_used;
+
+
+	fp = fopen(argv[1], "r");
+	char b = getc(fp);
+	while(b != EOF){
+		if(b == '\n') nlines++;
+		b = getc(fp);
+	}
+	fclose(fp);
+
+	fp = fopen(argv[1], "r");
+	fpo = fopen(argv[2], "a");
+
+	do{
+		fscanf(fp, "%d", &numItems);
+		fgets(buff, 1000, fp);
+		cap = atoi(buff);
+		//printf("%d, %d\n", numItems, cap);
+		n++;
+		item arr[numItems];
+		item newarr[numItems];
+		item ogarr[numItems];
+		maxProfit = 0;
+		for(int i = 0; i < numItems; i++){
+			fscanf(fp, "%d", &arr[i].weight);
+			fgets(buff, 1000, fp);
+                        arr[i].profit = atoi(buff);
+			ogarr[i].weight = arr[i].weight;
+			ogarr[i].profit = arr[i].profit;
+			arr[i].ratio = arr[i].profit / arr[i].weight;
+			//arr[i].id = i+1;
+			n++;
+			//sort(arr, numItems);
+			//fgets(buff, 1000, fp);
+			//arr[i].profit = atoi(buff);
+			//printf("%d, %d\n", arr[i].profit, arr[i].weight);
+		}
+		sort(arr, numItems);
+		if(alg == 0){
+			start = clock();
+			greedy1(cap, arr, newarr, numItems);
+			end = clock();
+			cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+			cpu_time_used *= 1000;
+			for(int i = 0; i < numItems; i++){
+				maxProfit += newarr[i].profit;
+			}
+			fprintf(fpo, "%d %d %f ", numItems, maxProfit, cpu_time_used);
+			for(int i = 0; i < numItems; i++){
+				if(arr[i].knap == 1){
+					for(int j = 0; j < numItems; j++){
+						if(arr[i].profit == ogarr[j].profit && arr[i].weight == ogarr[j].weight)
+                                			fprintf(fpo, "%d ", j+1);
+					}
+				}
+                        }
+			fprintf(fpo, "\n");
+		}
+		if(alg == 1){
+                        start = clock();
+                        greedy2(cap, arr, newarr, numItems);
+                        end = clock();
+                        cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+                        cpu_time_used *= 1000;
+                        for(int i = 0; i < numItems; i++){
+                                maxProfit += newarr[i].profit;
+                        }
+                        fprintf(fpo, "%d %d %f ", numItems, maxProfit, cpu_time_used);
+                        for(int i = 0; i < numItems; i++){
+                                if(arr[i].knap == 1){
+                                        for(int j = 0; j < numItems; j++){
+                                                if(arr[i].profit == ogarr[j].profit && arr[i].weight == ogarr[j].weight)
+                                                        fprintf(fpo, "%d ", j+1);
+                                        }
+                                }
+                        }
+                        fprintf(fpo, "\n");
+                }
+		if(alg == 2){
+			//int optimal[numItems+1];
+                        start = clock();
+                        backtrack(cap, arr, newarr, numItems, fpo);
+                        end = clock();
+                        cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+                        cpu_time_used *= 1000;
+                        //for(int i = 0; i < numItems; i++){
+                                //if(optimal[i+1] == 1){
+					//printf("%d\n",i+1);
+					//maxProfit += arr[i].profit;
+				//}
+                        //}
+                        fprintf(fpo, "%f ", cpu_time_used);
+                        for(int i = 0; i < numItems; i++){
+                                if(arr[i].knap == 1){
+                                        for(int j = 0; j < numItems; j++){
+                                                if(arr[i].profit == ogarr[j].profit && arr[i].weight == ogarr[j].weight)
+                                                        fprintf(fpo, "%d ", j+1);
+                                        }
+                                }
+                        }
+                        fprintf(fpo, "\n");
+                }
+	}while(n < nlines);
+	fclose(fp);
+	fclose(fpo);
 	//int maxprofit = 0;
-	item arr[4];
-	arr[0].profit = 40;
-	arr[0].weight = 2;
-	arr[0].ratio = 20;
-	arr[1].profit = 30;
-	arr[1].weight = 5;
-	arr[1].ratio = 6;
-	arr[2].profit = 50;
-	arr[2].weight = 10;
-	arr[2].ratio = 5;
-	arr[3].profit = 10;
-	arr[3].weight = 5;
-	arr[3].ratio = 2;
-	item newarr[4];
-	sort(arr, 4);
-	backtrack(16, arr, newarr, 4);
+	//item arr[4];
+	//arr[0].profit = 40;
+	//arr[0].weight = 2;
+	//arr[0].ratio = 20;
+	//arr[1].profit = 30;
+	//arr[1].weight = 5;
+	//arr[1].ratio = 6;
+	//arr[2].profit = 50;
+	//arr[2].weight = 10;
+	//arr[2].ratio = 5;
+	//arr[3].profit = 10;
+	//arr[3].weight = 5;
+	//arr[3].ratio = 2;
+	//item newarr[4];
+	//sort(arr, 4);
+	//backtrack(16, arr, newarr, 4);
 	//greedy2(16, arr, newarr, 4);
 	//printf("%d\n", (sizeof(arr)/sizeof(arr[0])));
 	//for(int i = 0; i < 2; i++){
