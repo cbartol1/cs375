@@ -22,7 +22,7 @@ void sort(item* arr, int size){
 	for(int i = 0; i < size-1; i++){
 		min = i;
 		for(int j = i+1; j < size; j++){
-			if(arr[j].ratio < arr[min].ratio)
+			if(arr[j].ratio > arr[min].ratio)
 				min = j;
 		}
 		swap(&arr[min], &arr[i]);
@@ -41,6 +41,7 @@ void greedy1(int c, item* arr, item* newarr, int size){
 		newarr[i].ratio = arr[i].ratio;
 		//arr[i].knap = 1;
 		if(sum == c){
+			arr[i].knap = 1;
 			break;
 		}
 		if(sum >= c){
@@ -117,6 +118,8 @@ int kwf2(int i,int weight, int profit, item* arr, int c, int size){
 		}
 		i++;
 	}
+	//printf("kwf2\n");
+	//printf("\n");
 	return bound;
 }
 
@@ -131,7 +134,7 @@ int promising(int i, item* arr, int c, int size, int weight, int profit, int max
 
 void knapsack(int i, int profit, int weight, int c, int maxprofit, item* arr, int* optimal, int size, int* include){
 	if(weight <= c && profit > maxprofit){
-		//printf("changed!");
+		//printf("%d\n", i);
 		maxprofit = profit;
 		//numbest = i;
 		for(int i = 0; i < size+1; i ++){
@@ -173,11 +176,13 @@ void backtrack(int c, item* arr, item* newarr, int size, FILE *fpo){
 	for(int i = 0; i < size+1; i ++){
                 include[i] = 0;
         }
+	//printf("ding!\n");
 	//int numbest = 0;
 	knapsack(0, 0, 0, c, maxprofit, arr, optimal, size, include);
 	//for(int i = 0; i < size+1; i ++){
 		//fprintf(fpo, "%d, %d\n", optimal[i], include[i]);
 	//}
+	//printf("ding!\n");
 	maxprofit = 0;
 	for(int i = 0; i < size; i++){
 		if(optimal[i+1]){
@@ -192,7 +197,7 @@ void backtrack(int c, item* arr, item* newarr, int size, FILE *fpo){
 int main(int argc, char* argv[]){
 	FILE *fp;
 	FILE *fpo;
-	char buff[1000];
+	char buff[10000];
 	int nlines = 0;
 	int n = 0;
 	int numItems = 0;
@@ -216,7 +221,7 @@ int main(int argc, char* argv[]){
 
 	do{
 		fscanf(fp, "%d", &numItems);
-		fgets(buff, 1000, fp);
+		fgets(buff, 10000, fp);
 		cap = atoi(buff);
 		//printf("%d, %d\n", numItems, cap);
 		n++;
@@ -226,7 +231,8 @@ int main(int argc, char* argv[]){
 		maxProfit = 0;
 		for(int i = 0; i < numItems; i++){
 			fscanf(fp, "%d", &arr[i].weight);
-			fgets(buff, 1000, fp);
+			//if(numItems==1000) b = getc(fp);
+			fgets(buff, 10000, fp);
                         arr[i].profit = atoi(buff);
 			ogarr[i].weight = arr[i].weight;
 			ogarr[i].profit = arr[i].profit;
@@ -238,7 +244,10 @@ int main(int argc, char* argv[]){
 			//arr[i].profit = atoi(buff);
 			//printf("%d, %d\n", arr[i].profit, arr[i].weight);
 		}
+		//printf("%d, %d\n", arr[0].profit, arr[0].weight);
 		sort(arr, numItems);
+		//printf("%d, %d\n", arr[0].profit, arr[0].weight);
+		//printf("%d\n",numItems);
 		if(alg == 0){
 			start = clock();
 			greedy1(cap, arr, newarr, numItems);
