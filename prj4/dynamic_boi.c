@@ -4,10 +4,10 @@
 #include<time.h>
 
 typedef struct{
-	int profit;
+	int price;
 	int weight;
-	int ratio;
-	int val;
+	//int ratio;
+	//int val;
 } item;
 
 //psuedocode:
@@ -21,21 +21,42 @@ typedef struct{
 //and make the second row all 0's, then repeat until all the inputs are in
 //then the last val is the max profit (i think)
 
-void dynamic(int cap, item* arr, item* newarr1, item* newarr2, int size){
+void dynamic(int cap, item* arr, int* newarr1, int* newarr2, int size){
 	for(int i = 0; i < size; i++){
-		for(int c = 1; c < size+1; c++){
-			if(arr[i].weight <= c && newarr1[c - arr[i].weight].price + arr[i].price > newarr1[c].price){
-				newarr2[c].price = newarr1[c - arr[i-1].weight].price + arr[i-1].price;
+		for(int c = 1; c < cap+1; c++){
+			if(arr[i].weight <= c && newarr1[c - arr[i].weight] + arr[i].price > newarr1[c]){
+				newarr2[c] = newarr1[c - arr[i].weight] + arr[i].price;
 			}
 			else{
-				newarr2[c].price = newarr1[c].price;
+				newarr2[c] = newarr1[c];
 			}
 		}
-		for(int c = 1; c < size+1; c++){
-                        newarr1[c].price = newarr2[c].price;
-			newarr1[c].weight = newarr2[c].weight;
-			newarr2[c].price = 0;
-			newarr2[c].weight = 0;
+		for(int c = 1; c < cap+1; c++){
+                        newarr1[c] = newarr2[c];
+			//newarr1[c].weight = newarr2[c].weight;
+			newarr2[c] = 0;
+			//newarr2[c].weight = 0;
                 }
 	}
+}
+
+int main(int argc, char* argv[]){
+	int cap = 16;
+	item arr[4];
+	arr[0].price = 40;
+	arr[0].weight = 2;
+	arr[1].price = 30;
+	arr[1].weight = 5;
+	arr[2].price = 50;
+	arr[2].weight = 10;
+	arr[3].price = 10;
+	arr[3].weight = 5;
+	int newarr1[17];
+	int newarr2[17];
+	for(int i = 0; i < 17; i++){
+		newarr1[i] = 0;
+		newarr2[i] = 0;
+	}
+	dynamic(cap, arr, newarr1, newarr2, 4);
+	printf("%d\n", newarr1[16]);
 }
